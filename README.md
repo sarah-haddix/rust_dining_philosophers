@@ -1,2 +1,12 @@
 # rust_dining_philosophers
 590 assn - code up dining philosophers problem in Rust
+
+To code up the dining philosophers problem in Rust, I used a shared data model. Since I have some experience with concurrent programming in C, Dijkstra's solution to the problem using lock ordering makes the most sense to me. 
+
+I solved this problem in a very classic manor - just ensuring that each philosopher must pick up their lower numbered fork before their higher numbered fork. If you imagine each fork laid out in a line from 1-5 instead of around a table, it is clear to see that this solution avoids deadlock. As a quick proof, for the sake of contradiction, assume we have deadlock. Then, philosopher 1 cannot get either fork 1 or fork 2. Case fork 1: philospher 1 cannot get fork 1 because philosopher 5 must have fork 1. Then, philospher 5 must also have fork 5. Since philospher 5 has both forks, he can eat and the system is not deadlocked. Case fork 2: philosopher 1 cannot get fork 2 because philosopher 2 has fork 2. Since the system is deadlocked, philosopher 2 cannot get fork 3 because philosopher 3 has fork 3. Since the system is deadlocked, philosopher 3 cannot get fork 4 because philosopher 4 has fork 4. Since the system is deadlocked, philosopher 4 cannot get fork 5 because philosopher 5 has fork 5. This case will never happen because in this case, philosopher 5 has fork 5 and not fork 1, which is a violation of the ordering. Thus, we have a contradiction and therefore deadlock is impossible. 
+
+In terms of implementation details, I used Mutexs to model forks. They are just locks around an int, since the "contents" of the forks are not important. Philosophers were modeled using threads, each one running a method that indefinitly eats and thinks for random amounts of time and identified by a the "number" of the philosopher (1-5). The randomness of the eating and thinking helps prevent starvation. 
+
+In order to gracefully exit the program, I overrode the ctrl-c signal. Then, when a user presses ctrl-c while the program is running, the program handles it internally instead of letting a OS signal handler run. The program just lets whatever eating and thinking was queued to happen by the philosophers happen, waits for all the threads to join the main thread, and then exits. This way, no thread is just randomlly shut down in the middle of execution. All allocated memory is freed by the threads and the program exits gracefully.
+
+
